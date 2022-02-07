@@ -1,0 +1,24 @@
+#!/bin/bash
+
+ADDR=$1
+if [ $# -ne 1 ]; then
+  echo 'Usage: homer 192.168.1.1'
+  exit -1
+fi
+
+ADDR=$1
+
+ping-check() {
+  ping -W 2 -c 1 -q $1 2>/dev/null | grep '1 received' >/dev/null
+}
+
+if ping-check $ADDR; then
+  echo "$ADDR is already active"
+  exit -2
+fi
+
+while ! ping-check $ADDR; do
+  sleep 0.2
+done
+
+notify-send -a $0 "$ADDR is home"

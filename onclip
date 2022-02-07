@@ -1,0 +1,32 @@
+#!/bin/bash
+regex='(https?|ftp)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
+
+clearclip() {
+  for i in `seq 1 10`; do
+    echo | xclip -selection clipboard
+  done
+}
+
+dl-link() {
+  while ! yt-dlp --proxy socks5://server:9050 --abort-on-error $1 1>/dev/null 2>&1; do
+    sleep 10
+  done
+  echo "Downloaded $1"
+}
+
+LASTLINK=0
+while true; do
+  LINK=$(xclip -o)
+  if [[ $LINK != $LASTLINK ]]; then
+    if [[ $LINK =~ $regex ]]; then
+      echo Inspecting link: $LINK
+      LASTLINK=$LINK
+      clearclip
+      (dl-link $LINK) &
+    fi  
+  fi
+  sleep 0.4
+done
+
+clearclip
+kill onclip
