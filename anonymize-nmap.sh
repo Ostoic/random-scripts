@@ -30,11 +30,8 @@ cd $NMAP_NSELIB
 # Copy user agents to nselib
 chmod ugo+r $UA_FILE
 
-# Copy rua.lua into the nselib folder
-echo -n X0VOViA9IHN0ZG5zZS5tb2R1bGUoInJ1YSIsIHN0ZG5zZS5zZWVhbGwpCgpmdW5jdGlvbiBjaG9vc2VfcmFuZG9tKCkKICBsb2NhbCB1YXMgPSBpby5vcGVuKCcvdXNyL3NoYXJlL25tYXAvbnNlbGliL3VzZXItYWdlbnRzLnR4dCcsICdyJyk6cmVhZCgnKmEnKQogIGxvY2FsIF8sIG4gPSB1YXM6Z3N1YignXG4nLCAnJykKICBsb2NhbCByID0gbWF0aC5yYW5kb20oMSwgbikKICBsb2NhbCBpID0gMQogIGZvciBhZ2VudCBpbiB1YXM6Z21hdGNoKCdbXlxuXSsnKSBkbwogICAgaWYgaSA9PSByIHRoZW4KICAgICAgcmV0dXJuIGFnZW50CiAgICBlbmQKICBlbmQKICAKICBpID0gaSArIDEKZW5kCgpyZXR1cm4gX0VOVjsK | base64 -d > rua.lua
-
 # Remove identifying Nmap 404 checks
 sed -i 's/nmaplowercheck/appindex/g' http.lua 2>/dev/null
 sed -i 's/NmapUpperCheck/AppIndex/g' http.lua 2>/dev/null
 sed -i 's/Nmap\/folder\/check/app\/index/g' http.lua 2>/dev/null
-sed -i "s/USER_AGENT[ \t]*=[ \t]*stdnse.get_script_args.*useragent.*/local rua = require('rua')\nUSER_AGENT = rua.choose_random()\n/g" http.lua
+sed -i "s|USER_AGENT[ \t]*=[ \t]*stdnse.get_script_args.*useragent.*|local uas = io.open('$NMAP_NSELIB/$UA_FILE', 'r'):read('*a')\nlocal _, n = uas:gsub('\\\\n', '')\nlocal r = math.random(1, n)\nlocal i = 1\n\nfor agent in uas:gmatch('[^\\\\n]+') do\n  if i == r then\n    USER_AGENT = agent; break\n  end\n  i = i + 1\nend|g" http.lua
