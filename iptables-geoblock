@@ -7,7 +7,7 @@ fi
 
 if [ $# -ne 1 ]; then 
   echo "Usage: $0 <country-code>"
-  echo "Example: \"$0 AQ\" blocks those pesky Antarctica scientists"
+  echo "Example: \"$0 AQ\" blocks those pesky Antarctic scientists"
   exit -2
 fi
 
