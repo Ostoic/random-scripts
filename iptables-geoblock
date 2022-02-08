@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if [ $(id -u) -ne 0 ]; then
+  echo "Error: Must run $0 as root!"
+  exit -1
+fi
+
+if [ $# -ne 1 ]; then 
+  echo "Usage: $0 <country-code>"
+  echo "Example: \"$0 AQ\" blocks those pesky Antarctica scientists"
+  exit -2
+fi
+
+if iptables -I INPUT -m geoip --src-cc $1 -j DROP ; then
+  echo "Added geoip block for country code $1"
+fi
