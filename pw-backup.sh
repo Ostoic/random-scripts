@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 cd "$HOME"
 BACKUP_DIR=$(realpath "$HOME/.pw-backup")
 backup-kdb() {
@@ -39,7 +40,9 @@ KDB="Passwords.kdbx"
 backup-kdb "$KDB"
 
 ENC_KDB="$KDB.gpg"
-rm "$ENC_KDB"
+if [ -f "$ENC_KDB" ]; then
+	rm "$ENC_KDB"
+fi
 
 # Encrypt then backup through git
 gpg -c -o "$ENC_KDB" "$KDB"
@@ -57,6 +60,8 @@ if ! keepassxc-cli merge -s "$KDB" .other-pw.kdbx; then
   echo "Error: Unable to merge databases"
   exit 2
 fi
+
+#git-pw-backup "$ENC_KDB"
 
 # Send new one back to desktop
 rsync -azP "$KDB" owner@desktop:
