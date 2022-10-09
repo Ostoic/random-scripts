@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Exit on error
 set -e
 cd "$HOME"
 BACKUP_DIR=$(realpath "$HOME/.pw-backup")
