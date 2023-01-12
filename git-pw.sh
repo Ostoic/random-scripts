@@ -1,5 +1,4 @@
 #!/bin/bash
-# TODO: git-like operations pull, merge, update, etc
 
 PW="Passwords.kdbx"
 EPW=$PW.gpg
@@ -21,6 +20,10 @@ git-clone-pw() {
   gpg -d -o git-pw.kdbx "personal/$1.gpg"
 }
 
+update-current-pw() {
+  cp $1 ~/$PW
+}
+
 merge-into-current() {
   # Merge the databases: (git, pw) -> pw
   keepassxc-cli merge -s $1 git-pw.kdbx
@@ -30,17 +33,17 @@ merge-into-current() {
   fi
 }
 
-push-git() {
+encrypt-pw-into-repo() {
+  rm "personal/$1.gpg"
+  gpg -c -o "personal/$1.gpg" $1
+}
+
+push-repo() {
   pushd personal
   git add .
   git commit -m 'kdbx update'
   git push
   popd
-}
-
-git-encrypt-pw() {
-  rm "personal/$1.gpg"
-  gpg -c -o "personal/$1.gpg" $1
 }
 
 if [ $# == 0 ]; then
@@ -53,18 +56,20 @@ backup-current-pw $PW
 git-clone-pw $PW
 cp ~/$PW .
 
-# Encrypt pw into personal/$PW.gpg
-git-encrypt-pw $PW
-
 if [ $OP == "merge" ]; then
   merge-into-current $PW
-  push-git
+  push-repo
 
   # Move merged database into the user's home directory
-  cp $PW ~/
+  update-current-pw $PW
+  
+elif [ $OP == "pull" ]; then
+  update-current-pw "git-pw.kdbx"
 
 elif [ $OP == "push" ]; then
-  push-git
+  # Encrypt pw into personal/$PW.gpg
+  encrypt-pw-into-repo $PW
+  push-repo
 fi
 
 rm -rf $WORK
