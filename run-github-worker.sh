@@ -1,7 +1,8 @@
 #!/bin/bash
 
 REPO_PATH="https://github.com/ostoic/$GITHUB_REPO"
-#$GITHUB_BEARER
+
+# Note: GITHUB_BEARER and GITHUB_REPO are environment variables that are expected to be defined.
 
 create-worker-token() {
 	REPO=$1
