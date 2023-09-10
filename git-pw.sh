@@ -4,7 +4,12 @@ PW="Passwords.kdbx"
 EPW=$PW.gpg
 set -e 
 
-WORK=$(mktemp -d)
+WORK_SUFFIX=$RANDOM$RANDOM$RANDOM
+WORK=/tmp/$WORK_SUFFIX
+pushd /tmp
+mkdir -p $WORK_SUFFIX
+popd
+
 pushd $WORK
 
 # Backup current pw
@@ -72,4 +77,5 @@ elif [ $OP == "push" ]; then
   push-repo
 fi
 
+popd
 rm -rf $WORK
