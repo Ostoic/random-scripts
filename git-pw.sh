@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e 
-PW="main"
+PW_PATH="$HOME/main.kdbx"
 
 WORK_SUFFIX=$RANDOM$RANDOM$RANDOM
 WORK=/tmp/$WORK_SUFFIX
@@ -12,24 +12,25 @@ popd
 pushd $WORK
 
 backup-current-pw() {
-  cp ~/$1 ~/."$(date +%s)"-current-pw.kdbx.bk
+  if [ -f $PW_PATH ]; then 
+    cp $PW_PATH ~/."$(date +%s)-$(basename $PW_PATH)".bk
+  fi
 }
 
 git-clone-pw() {
   git clone git@github.com:Ostoic/pw.git
-  # cp pw/$1 git-pw.kdbx.gpg
-
+  
   # Decrypt secrets from git repo
-  gpg -d -o git-pw.kdbx "pw/kdbx.gpg"
+  gpg -d -o "$WORK/git-pw.kdbx" "$WORK/pw/kdbx.gpg"
 }
 
 update-current-pw() {
-  cp $1 ~/$PW
+  cp $1 $PW_PATH
 }
 
 merge-into-current() {
-  # Merge the databases: (git, pw) -> pw
-  keepassxc-cli merge -s $1 git-pw.kdbx
+  # Merge $PW_PATH and git-pw into $PW_PATH.
+  keepassxc-cli merge --dry-run -s $PW_PATH "$WORK/git-pw.kdbx"
   if [ "$(sha256sum $1)" = "$(sha256sum ~/$1)" ]; then
     echo "No changes"
     exit
@@ -37,12 +38,13 @@ merge-into-current() {
 }
 
 encrypt-pw-into-repo() {
-  rm "pw/$1.gpg"
-  gpg -c -o "pw/$1.gpg" $1
+  # This is better than `gpg --yes` since that might ignore security prompts.
+  rm "$WORK/pw/kdbx.gpg"
+  gpg -c -o "$WORK/pw/kdbx.gpg" $PW_PATH
 }
 
 push-repo() {
-  pushd pw
+  pushd "$WORK/pw"
   git add .
   git commit -m 'kdbx update'
   git push
@@ -55,23 +57,23 @@ else
   OP=$1
 fi
 
-backup-current-pw $PW
-git-clone-pw $PW
-cp ~/$PW .
+backup-current-pw 
+git-clone-pw 
+# $OWKR/git-pw.kdbx is our working pw database
+# cp "$WORK/git-pw.kdbx" ~
 
 if [ $OP == "merge" ]; then
-  merge-into-current $PW
-  push-repo
-
+  merge-into-current
+  #
   # Move merged database into the user's home directory
-  update-current-pw $PW
+  update-current-pw $PW_PATH
   
 elif [ $OP == "pull" ]; then
   update-current-pw "git-pw.kdbx"
 
 elif [ $OP == "push" ]; then
   # Encrypt pw into pw/$PW.gpg
-  encrypt-pw-into-repo $PW
+  encrypt-pw-into-repo $PW_PATH
   push-repo
 fi
 
