@@ -1,8 +1,7 @@
 #!/bin/bash
 
-PW="kdbx.kdbx"
-EPW=$PW.gpg
 set -e 
+PW="main"
 
 WORK_SUFFIX=$RANDOM$RANDOM$RANDOM
 WORK=/tmp/$WORK_SUFFIX
@@ -12,17 +11,16 @@ popd
 
 pushd $WORK
 
-# Backup current pw
 backup-current-pw() {
   cp ~/$1 ~/."$(date +%s)"-current-pw.kdbx.bk
 }
 
 git-clone-pw() {
   git clone git@github.com:Ostoic/pw.git
-  # cp personal/$1 git-pw.kdbx.gpg
+  # cp pw/$1 git-pw.kdbx.gpg
 
   # Decrypt secrets from git repo
-  gpg -d -o git-pw.kdbx "personal/$1.gpg"
+  gpg -d -o git-pw.kdbx "pw/kdbx.gpg"
 }
 
 update-current-pw() {
@@ -39,12 +37,12 @@ merge-into-current() {
 }
 
 encrypt-pw-into-repo() {
-  rm "personal/$1.gpg"
-  gpg -c -o "personal/$1.gpg" $1
+  rm "pw/$1.gpg"
+  gpg -c -o "pw/$1.gpg" $1
 }
 
 push-repo() {
-  pushd personal
+  pushd pw
   git add .
   git commit -m 'kdbx update'
   git push
@@ -72,7 +70,7 @@ elif [ $OP == "pull" ]; then
   update-current-pw "git-pw.kdbx"
 
 elif [ $OP == "push" ]; then
-  # Encrypt pw into personal/$PW.gpg
+  # Encrypt pw into pw/$PW.gpg
   encrypt-pw-into-repo $PW
   push-repo
 fi
