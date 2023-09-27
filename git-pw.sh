@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PW="Passwords.kdbx"
+PW="kdbx.kdbx"
 EPW=$PW.gpg
 set -e 
 
@@ -18,7 +18,7 @@ backup-current-pw() {
 }
 
 git-clone-pw() {
-  git clone git@github.com:Ostoic/personal.git
+  git clone git@github.com:Ostoic/pw.git
   # cp personal/$1 git-pw.kdbx.gpg
 
   # Decrypt secrets from git repo
