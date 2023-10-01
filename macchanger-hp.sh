@@ -11,4 +11,6 @@ random-hp-mac() {
   echo "d1:e5:60":"$group1:$group2:$group3"
 }
 
-echo macchanger -m $(random-hp-mac) wlo1
+IFACE=$1
+
+echo macchanger -m $(random-hp-mac) $IFACE
