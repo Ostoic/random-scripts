@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -e 
+
+if [ $# -lt 1 ]; then
+	echo "Error: must specify playlist url to download!"
+	exit -1
+fi
+
+export URL="$1"
+
+if [ -z $PROXY ]; then
+  export PROXY=socks5://server:9050
+	echo "Downloading playlist using proxy: $PROXY"
+fi
+
+if [ -z $NJOBS ]; then
+  export NJOBS=3
+	echo "Downloading playlist with $NJOBS number of jobs"
+fi
+
+ yt-dlp --get-url --proxy=$PROXY --skip-download --flat-playlist --restrict-filenames -x --audio-quality 0 -f mp3 $URL > playlist.txt
+
+ cat playlist.txt | xargs -I% -P $NJOBS yt-dlp --proxy $PROXY -x --audio-quality 0 --audio-format mp3 --restrict-filenames %
